@@ -190,6 +190,11 @@ export default function GameCanvas() {
           });
         }
       }
+      for (const id in players) {
+        if (!backendPlayers[id]) {
+          delete players[id];
+        }
+      }
       console.log(players);
     });
 
@@ -227,12 +232,12 @@ export default function GameCanvas() {
 
       c.clearRect(0, 0, canvas.width, canvas.height);
       c.drawImage(backgroundCanvas, 0, 0);
-      
-     for(const id in players){
-      const player = players[id];
-      player.draw(c);
-     } 
-      
+
+      for (const id in players) {
+        const player = players[id];
+        player.draw(c);
+      }
+
       if (frontRenderLayerCanvas) {
         c.drawImage(frontRenderLayerCanvas, 0, 0);
       }

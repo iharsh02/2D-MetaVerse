@@ -23,13 +23,18 @@ const players: { [key: string]: Player } = {};
 
 io.on("connection", (socket) => {
   players[socket.id] = {
-    x: 100,
-    y: 100,
+    x: 500 * Math.random(),
+    y: 500 * Math.random(),
     size: 15,
   };
 
   io.emit("updatePlayers", players);
-  console.log(players);
+  
+  socket.on("disconnect", (resaon) => {
+    console.log(resaon);
+    delete players[socket.id];
+    io.emit("updatePlayers", players);
+  });
 });
 
 server.listen(8080, () => {
