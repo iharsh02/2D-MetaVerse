@@ -176,7 +176,6 @@ export default function GameCanvas() {
       return offscreenCanvas;
     };
 
-    const player = new Player({ x: 100, y: 100, size: 15 });
     const players: { [key: string]: Player } = {};
 
     socket.on("updatePlayers", (backendPlayers) => {
@@ -188,11 +187,6 @@ export default function GameCanvas() {
             y: backendPlayer.y,
             size: backendPlayer.size,
           });
-        }
-      }
-      for (const id in players) {
-        if (!backendPlayers[id]) {
-          delete players[id];
         }
       }
       console.log(players);
@@ -213,15 +207,18 @@ export default function GameCanvas() {
       const deltaTime = (currentTime - lastTimeRef.current) / 1000;
       lastTimeRef.current = currentTime;
 
-      player.handleInput(keys);
-      player.update(deltaTime, collisionBlocks);
+      const localPlayer = players[socket.id!];
+      if (localPlayer) {
+        localPlayer.handleInput(keys);
+        localPlayer.update(keys, deltaTime, collisionBlocks);
+      }
 
       const horizontalScrollDistance = Math.min(
-        Math.max(0, player.center.x - VIEWPORT_CENTER_X),
+        Math.max(0, localPlayer.center.x - VIEWPORT_CENTER_X),
         MAX_SCROLL_X
       );
       const verticalScrollDistance = Math.min(
-        Math.max(0, player.center.y - VIEWPORT_CENTER_Y),
+        Math.max(0, localPlayer.center.y - VIEWPORT_CENTER_Y),
         MAX_SCROLL_Y
       );
 
@@ -262,7 +259,6 @@ export default function GameCanvas() {
 
     startRendering();
 
-    // Return the cleanup function from your eventListener module
     return cleanup;
   }, []);
 

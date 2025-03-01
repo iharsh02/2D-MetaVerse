@@ -23,8 +23,8 @@ const players: { [key: string]: Player } = {};
 
 io.on("connection", (socket) => {
   players[socket.id] = {
-    x: 500 * Math.random(),
-    y: 500 * Math.random(),
+    x: 100,
+    y: 100,
     size: 15,
   };
 

@@ -122,7 +122,7 @@ export class Player {
     );
   }
 
-  update(deltaTime: number, collisionBlocks: CollisionBlock[]): void {
+  update(keys: Keys, deltaTime: number, collisionBlocks: CollisionBlock[]): void {
     if (!deltaTime) return;
 
     this.elapsedTime += deltaTime;
