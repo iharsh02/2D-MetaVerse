@@ -12,7 +12,6 @@ import { CollisionBlock } from "@/classes/CollisionBlock";
 
 import collisions from "@/data/collisions";
 import l_Collisions from "@/data/l_Collisions";
-import l_Characters from "@/data/l_Characters";
 import l_Front_Renders from "@/data/l_Front_Renders";
 import l_House_Decorations from "@/data/l_House_Decorations";
 import l_Houses from "@/data/l_Houses";
@@ -23,6 +22,7 @@ import l_Trees_1 from "@/data/l_Trees_1";
 import l_Trees_2 from "@/data/l_Trees_2";
 import l_Trees_3 from "@/data/l_Trees_3";
 import l_Trees_4 from "@/data/l_Trees_4";
+import { io } from "socket.io-client";
 
 const layersData = {
   l_Terrain,
@@ -34,7 +34,6 @@ const layersData = {
   l_Landscape_Decorations_2,
   l_Houses,
   l_House_Decorations,
-  l_Characters,
   l_Collisions,
 };
 const frontRenderLayerData = {
@@ -58,7 +57,6 @@ const tilesets = {
   },
   l_Houses: { imageUrl: "/images/decorations.png", tileSize: 16 },
   l_House_Decorations: { imageUrl: "/images/decorations.png", tileSize: 16 },
-  l_Characters: { imageUrl: "/images/characters.png", tileSize: 16 },
   l_Collisions: { imageUrl: "/images/characters.png", tileSize: 16 },
 };
 
@@ -68,6 +66,7 @@ export default function GameCanvas() {
   const lastTimeRef = useRef<number>(performance.now());
 
   useEffect(() => {
+    const socket = io("http://localhost:8080");
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -142,7 +141,9 @@ export default function GameCanvas() {
       });
     };
 
-    const renderStaticLayers = async (layersData: Record<string, number[][]>) => {
+    const renderStaticLayers = async (
+      layersData: Record<string, number[][]>
+    ) => {
       const offscreenCanvas = document.createElement("canvas");
       offscreenCanvas.width = canvas.width;
       offscreenCanvas.height = canvas.height;
@@ -176,13 +177,28 @@ export default function GameCanvas() {
     };
 
     const player = new Player({ x: 100, y: 100, size: 15 });
+    const players: { [key: string]: Player } = {};
+
+    socket.on("updatePlayers", (backendPlayers) => {
+      for (const id in backendPlayers) {
+        const backendPlayer = backendPlayers[id];
+        if (!players[id]) {
+          players[id] = new Player({
+            x: backendPlayer.x,
+            y: backendPlayer.y,
+            size: backendPlayer.size,
+          });
+        }
+      }
+      console.log(players);
+    });
 
     // Create keys state using your helper function
     const keys = createDefaultKeysState();
 
     // Initialize lastTimeRef's current value to the current time
     lastTimeRef.current = performance.now();
-    
+
     // Set up event listeners using your custom function
     const cleanup = setupEventListeners(keys, lastTimeRef);
     let frontRenderLayerCanvas: HTMLCanvasElement | undefined;
@@ -211,7 +227,12 @@ export default function GameCanvas() {
 
       c.clearRect(0, 0, canvas.width, canvas.height);
       c.drawImage(backgroundCanvas, 0, 0);
+      
+     for(const id in players){
+      const player = players[id];
       player.draw(c);
+     } 
+      
       if (frontRenderLayerCanvas) {
         c.drawImage(frontRenderLayerCanvas, 0, 0);
       }

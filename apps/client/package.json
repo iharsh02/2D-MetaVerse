@@ -1,5 +1,5 @@
 {
-  "name": "client",
+  "name": "@repo/client",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -13,7 +13,8 @@
     "phaser": "^3.88.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "socket.io-client": "^4.8.1"
+    "socket.io-client": "^4.8.1",
+    "@repo/ui": "workspace:*"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
