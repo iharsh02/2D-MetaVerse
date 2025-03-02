@@ -1,3 +1,5 @@
+import { Socket } from "socket.io-client";
+
 const X_VELOCITY = 120;
 const Y_VELOCITY = 120;
 
@@ -50,6 +52,7 @@ export class Player {
     walkRight: CollisionBlock;
   };
   currentSprite: CollisionBlock;
+  socket?: Socket;
 
   constructor({ x, y, size, velocity = { x: 0, y: 0 } }: PlayerOptions) {
     this.x = x;
@@ -134,11 +137,12 @@ export class Player {
         (this.currentFrame + 1) % (this.currentSprite.frameCount ?? 1);
       this.elapsedTime -= intervalToGoToNextFrame;
     }
-    // upadte horizontal position and check collisions
+    
+    // Update horizontal position and check collisions
     this.updateHorizontalPosition(deltaTime);
     this.checkForHorizontalCollisions(collisionBlocks);
 
-    // update vertical position and check collisions
+    // Update vertical position and check collisions
     this.updateVerticalPosition(deltaTime);
     this.checkForVerticalCollisions(collisionBlocks);
 
@@ -146,6 +150,18 @@ export class Player {
       x: this.x + this.width / 2,
       y: this.y + this.height / 2,
     };
+
+    // Send position update to server
+    if (this.socket) {
+      this.socket.emit("playerMovement", {
+        x: this.x,
+        y: this.y,
+        animationState: {
+          direction: this.getCurrentSpriteDirection(),
+          moving: this.isMoving()
+        }
+      });
+    }
   }
 
   private updateHorizontalPosition(deltaTime: number): void {
@@ -157,6 +173,9 @@ export class Player {
   }
 
   handleInput(keys: Keys): void {
+    // Store previous velocity for change detection
+    const previousVelocity = { x: this.velocity.x, y: this.velocity.y };
+    
     this.velocity.x = 0;
     this.velocity.y = 0;
 
@@ -178,6 +197,18 @@ export class Player {
       this.currentSprite.frameCount = 4;
     } else {
       this.currentSprite.frameCount = 1;
+    }
+
+    // Emit player input state to server if we have a socket and velocity changed
+    if (this.socket && (previousVelocity.x !== this.velocity.x || previousVelocity.y !== this.velocity.y)) {
+      this.socket.emit("playerInput", {
+        keys: {
+          w: keys.w.pressed,
+          a: keys.a.pressed,
+          s: keys.s.pressed,
+          d: keys.d.pressed
+        }
+      });
     }
   }
 
@@ -227,5 +258,70 @@ export class Player {
         }
       }
     }
+  }
+
+  // Add a method to update only animation frames without position changes
+  updateAnimationOnly(deltaTime: number): void {
+    if (!deltaTime) return;
+
+    this.elapsedTime += deltaTime;
+
+    const intervalToGoToNextFrame = 0.12;
+
+    if (this.elapsedTime > intervalToGoToNextFrame) {
+      this.currentFrame =
+        (this.currentFrame + 1) % (this.currentSprite.frameCount ?? 1);
+      this.elapsedTime -= intervalToGoToNextFrame;
+    }
+
+    // Update center point
+    this.center = {
+      x: this.x + this.width / 2,
+      y: this.y + this.height / 2,
+    };
+  }
+
+  setSocket(socket: Socket): void {
+    this.socket = socket;
+  }
+  
+  getCurrentSpriteDirection(): string {
+    switch (this.currentSprite.x) {
+      case 0:
+        return 'down';
+      case 16:
+        return 'up';
+      case 32:
+        return 'left';
+      case 48:
+        return 'right';
+      default:
+        return 'down';
+    }
+  }
+  
+  isMoving(): boolean {
+    return this.velocity.x !== 0 || this.velocity.y !== 0;
+  }
+  
+  setAnimationState(direction: string, moving: boolean): void {
+    // Set the current sprite based on direction
+    switch (direction) {
+      case 'down':
+        this.currentSprite = this.sprites.walkDown;
+        break;
+      case 'up':
+        this.currentSprite = this.sprites.walkUp;
+        break;
+      case 'left':
+        this.currentSprite = this.sprites.walkLeft;
+        break;
+      case 'right':
+        this.currentSprite = this.sprites.walkRight;
+        break;
+    }
+    
+    // Update frame count based on movement
+    this.currentSprite.frameCount = moving ? 4 : 1;
   }
 }

@@ -178,27 +178,66 @@ export default function GameCanvas() {
 
     const players: { [key: string]: Player } = {};
 
+    // Socket connection events
+    socket.on("connect", () => {
+      console.log("Connected to server with ID:", socket.id);
+    });
+
+    socket.on("disconnect", () => {
+      console.log("Disconnected from server");
+    });
+
+    // Handle player updates from server
     socket.on("updatePlayers", (backendPlayers) => {
+      // First pass: create or update players
       for (const id in backendPlayers) {
         const backendPlayer = backendPlayers[id];
+        
         if (!players[id]) {
+          // Create new player
+          console.log("Creating new player:", id);
           players[id] = new Player({
             x: backendPlayer.x,
             y: backendPlayer.y,
             size: backendPlayer.size,
           });
+          
+          // If this is the local player, set their socket
+          if (id === socket.id) {
+            console.log("Setting socket for local player");
+            players[id].setSocket(socket);
+          }
+        } else if (id !== socket.id) {
+          // Only update remote players from server data
+          players[id].x = backendPlayer.x;
+          players[id].y = backendPlayer.y;
+          
+          // Update animation state for other players
+          if (backendPlayer.animationState) {
+            players[id].setAnimationState(
+              backendPlayer.animationState.direction,
+              backendPlayer.animationState.moving
+            );
+          }
         }
       }
-      console.log(players);
+
+      // Second pass: remove disconnected players
+      for (const id in players) {
+        if (!backendPlayers[id]) {
+          console.log("Removing disconnected player:", id);
+          delete players[id];
+        }
+      }
     });
 
-    // Create keys state using your helper function
+    // Create keys state
     const keys = createDefaultKeysState();
 
-    // Initialize lastTimeRef's current value to the current time
+    // Initialize lastTimeRef
     lastTimeRef.current = performance.now();
 
-    // Set up event listeners using your custom function
+    // Set up event listeners
     const cleanup = setupEventListeners(keys, lastTimeRef);
     let frontRenderLayerCanvas: HTMLCanvasElement | undefined;
 
@@ -207,29 +246,46 @@ export default function GameCanvas() {
       const deltaTime = (currentTime - lastTimeRef.current) / 1000;
       lastTimeRef.current = currentTime;
 
+      // Reference to local player for camera following
       const localPlayer = players[socket.id!];
-      if (localPlayer) {
-        localPlayer.handleInput(keys);
-        localPlayer.update(keys, deltaTime, collisionBlocks);
+
+      // Update all players
+      for (const id in players) {
+        const player = players[id];
+        
+        // Only process local player input
+        if (id === socket.id) {
+          player.handleInput(keys);
+          player.update(keys, deltaTime, collisionBlocks);
+        } else {
+          // For remote players, just update animation frames
+          player.updateAnimationOnly(deltaTime);
+        }
       }
 
-      const horizontalScrollDistance = Math.min(
-        Math.max(0, localPlayer.center.x - VIEWPORT_CENTER_X),
-        MAX_SCROLL_X
-      );
-      const verticalScrollDistance = Math.min(
-        Math.max(0, localPlayer.center.y - VIEWPORT_CENTER_Y),
-        MAX_SCROLL_Y
-      );
+      // Camera positioning logic (if local player exists)
+      let horizontalScrollDistance = 0;
+      let verticalScrollDistance = 0;
+      
+      if (localPlayer) {
+        horizontalScrollDistance = Math.min(
+          Math.max(0, localPlayer.center.x - VIEWPORT_CENTER_X),
+          MAX_SCROLL_X
+        );
+        verticalScrollDistance = Math.min(
+          Math.max(0, localPlayer.center.y - VIEWPORT_CENTER_Y),
+          MAX_SCROLL_Y
+        );
+      }
 
+      // Rendering
       c.save();
       c.scale(MAP_SCALE, MAP_SCALE);
-
       c.translate(-horizontalScrollDistance, -verticalScrollDistance);
-
       c.clearRect(0, 0, canvas.width, canvas.height);
       c.drawImage(backgroundCanvas, 0, 0);
 
+      // Draw all players
       for (const id in players) {
         const player = players[id];
         player.draw(c);
@@ -259,7 +315,10 @@ export default function GameCanvas() {
 
     startRendering();
 
-    return cleanup;
+    return () => {
+      cleanup();
+      socket.disconnect();
+    };
   }, []);
 
   return <canvas ref={canvasRef} />;
