@@ -1,9 +1,8 @@
-export interface Player {
+export type Player = {
     x: number;
     y: number;
     size: number;
-    animationState?: {
-        direction: string;
-        moving: boolean;
-    };
-}
+    velocity: { x: number; y: number };
+    lastProcessedInput: number;
+    animationState?: { direction: string; moving: boolean };
+};

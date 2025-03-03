@@ -266,7 +266,7 @@ export class Player {
 
     this.elapsedTime += deltaTime;
 
-    const intervalToGoToNextFrame = 0.12;
+    const intervalToGoToNextFrame = 0.15;
 
     if (this.elapsedTime > intervalToGoToNextFrame) {
       this.currentFrame =
