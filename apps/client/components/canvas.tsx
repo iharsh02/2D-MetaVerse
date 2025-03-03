@@ -321,5 +321,5 @@ export default function GameCanvas() {
     };
   }, []);
 
-  return <canvas ref={canvasRef} />;
+  return <canvas ref={canvasRef} className="w-full h-full" />;
 }
