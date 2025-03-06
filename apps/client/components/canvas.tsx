@@ -192,7 +192,7 @@ export default function GameCanvas() {
       // First pass: create or update players
       for (const id in backendPlayers) {
         const backendPlayer = backendPlayers[id];
-        
+
         if (!players[id]) {
           // Create new player
           console.log("Creating new player:", id);
@@ -201,7 +201,7 @@ export default function GameCanvas() {
             y: backendPlayer.y,
             size: backendPlayer.size,
           });
-          
+
           // If this is the local player, set their socket
           if (id === socket.id) {
             console.log("Setting socket for local player");
@@ -211,7 +211,7 @@ export default function GameCanvas() {
           // Only update remote players from server data
           players[id].x = backendPlayer.x;
           players[id].y = backendPlayer.y;
-          
+
           // Update animation state for other players
           if (backendPlayer.animationState) {
             players[id].setAnimationState(
@@ -252,7 +252,8 @@ export default function GameCanvas() {
       // Update all players
       for (const id in players) {
         const player = players[id];
-        
+
+        if (!player) return;
         // Only process local player input
         if (id === socket.id) {
           player.handleInput(keys);
@@ -266,7 +267,7 @@ export default function GameCanvas() {
       // Camera positioning logic (if local player exists)
       let horizontalScrollDistance = 0;
       let verticalScrollDistance = 0;
-      
+
       if (localPlayer) {
         horizontalScrollDistance = Math.min(
           Math.max(0, localPlayer.center.x - VIEWPORT_CENTER_X),
@@ -288,6 +289,7 @@ export default function GameCanvas() {
       // Draw all players
       for (const id in players) {
         const player = players[id];
+        if (!player) return;
         player.draw(c);
       }
 
