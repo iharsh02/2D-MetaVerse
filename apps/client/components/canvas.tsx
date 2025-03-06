@@ -323,5 +323,5 @@ export default function GameCanvas() {
     };
   }, []);
 
-  return <canvas ref={canvasRef} className="w-full h-full" />;
+  return <canvas ref={canvasRef} className="rounded-lg" />;
 }

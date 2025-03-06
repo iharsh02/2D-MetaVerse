@@ -1,14 +1,21 @@
-import Canvas from "@/components/canvas"
-import { Button } from "@workspace/ui/components/button"
+import AppBar from "@/components/AppBar";
+import Canvas from "@/components/canvas";
+import ChatBox from "@/components/chat";
 
-export default function Page() {
+export default function Home() {
   return (
-    <div className="flex items-center justify-center min-h-svh">
-      <div className="flex flex-col items-center justify-center gap-4">
-        <h1 className="text-2xl font-bold">Hello World</h1>
-        <Button size="sm">Button</Button>
-      </div>
-      <Canvas />
+    <div className="flex flex-col h-screen bg-neutral-900">
+      <main className="flex flex-grow overflow-hidden">
+        <div className="flex-1 overflow-hidden rounded-lg m-2">
+          <div className="h-full flex justify-center items-center">
+            <Canvas />
+          </div>
+        </div>
+        <div className="w-80 overflow-hidden m-2">
+          <ChatBox />
+        </div>
+      </main>
+      <AppBar />
     </div>
-  )
+  );
 }
