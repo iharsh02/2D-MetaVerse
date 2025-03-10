@@ -11,21 +11,21 @@ const Logo = () => (
   </div>
 )
 
-const UserStatus = ({ name, status }: { name: string; status: string }) => (
-  <div className="flex items-center space-x-2">
-    <div className="relative">
-      <img src="/user.png" alt={name} className="w-8 h-8 rounded-full" />
-      <div className={cn(
-        "absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-gray-800",
-        status === 'available' ? 'bg-green-500' : 'bg-gray-500'
-      )}></div>
-    </div>
-    <div className="hidden md:block">
-      <p className="ttext-sm font-medium text-white">{name}</p>
-      <p className="text-xs text-gray-400">{status}</p>
-    </div>
-  </div>
-)
+// const UserStatus = ({ name, status }: { name: string; status: string }) => (
+//   <div className="flex items-center space-x-2">
+//     <div className="relative">
+//       <img src="/user.png" alt={name} className="w-8 h-8 rounded-full" />
+//       <div className={cn(
+//         "absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-gray-800",
+//         status === 'available' ? 'bg-green-500' : 'bg-gray-500'
+//       )}></div>
+//     </div>
+//     <div className="hidden md:block">
+//       <p className="ttext-sm font-medium text-white">{name}</p>
+//       <p className="text-xs text-gray-400">{status}</p>
+//     </div>
+//   </div>
+// )
 
 const ActionButton = ({ icon: Icon, active = false, onClick }: { icon: React.ElementType; active?: boolean; onClick?: () => void }) => (
   <button

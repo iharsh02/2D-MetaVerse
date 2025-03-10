@@ -9,6 +9,7 @@ export const SOCKET_OPTIONS = {
   pingTimeout: 5000,
 };
 
-export const UPDATE_INTERVAL = 16;
-export const X_VELOCITY = 900;
-export const Y_VELOCITY = 900;
+export const UPDATE_INTERVAL = 15;
+export const CHAT_PROXIMITY_THRESHOLD = 50;
+export const X_VELOCITY = 120;
+export const Y_VELOCITY = 120;

@@ -2,12 +2,12 @@
 
 import React from "react";
 import { useState, useEffect } from 'react'
-import { Socket } from 'socket.io-client';
 import { Smile, X } from 'lucide-react'
 import { Avatar, AvatarImage, AvatarFallback } from '@workspace/ui/components/avatar';
 import { Button } from '@workspace/ui/components/button';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@workspace/ui/components/card';
 import { Input } from '@workspace/ui/components/input';
+import { Socket } from "socket.io-client";
 
 interface ChatMessage {
   id: string;

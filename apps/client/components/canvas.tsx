@@ -63,6 +63,12 @@ const tilesets = {
 export default function GameCanvas({ socket }: { socket: Socket }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const lastTimeRef = useRef<number>(performance.now());
+  const socketRef = useRef<Socket>(socket);
+  const playersRef = useRef<{ [key: string]: Player }>({});
+
+  useEffect(() => {
+    socketRef.current = socket;
+  }, [socket]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -174,43 +180,26 @@ export default function GameCanvas({ socket }: { socket: Socket }) {
       return offscreenCanvas;
     };
 
-    const players: { [key: string]: Player } = {};
+    const players = playersRef.current;
 
-    // Socket connection events
-    socket.on("connect", () => {
-      console.log("Connected to server with ID:", socket.id);
-    });
-
-    socket.on("disconnect", () => {
-      console.log("Disconnected from server");
-    });
-
-    // Handle player updates from server
-    socket.on("updatePlayers", (backendPlayers) => {
-      // First pass: create or update players
+    const handleUpdatePlayers = (backendPlayers: { [key: string]: any }) => {
       for (const id in backendPlayers) {
         const backendPlayer = backendPlayers[id];
 
         if (!players[id]) {
-          // Create new player
-          console.log("Creating new player:", id);
           players[id] = new Player({
             x: backendPlayer.x,
             y: backendPlayer.y,
             size: backendPlayer.size,
           });
 
-          // If this is the local player, set their socket
-          if (id === socket.id) {
-            console.log("Setting socket for local player");
-            players[id].setSocket(socket);
+          if (id === socketRef.current.id) {
+            players[id].setSocket(socketRef.current);
           }
-        } else if (id !== socket.id) {
-          // Only update remote players from server data
+        } else if (id !== socketRef.current.id) {
           players[id].x = backendPlayer.x;
           players[id].y = backendPlayer.y;
 
-          // Update animation state for other players
           if (backendPlayer.animationState) {
             players[id].setAnimationState(
               backendPlayer.animationState.direction,
@@ -220,22 +209,19 @@ export default function GameCanvas({ socket }: { socket: Socket }) {
         }
       }
 
-      // Second pass: remove disconnected players
       for (const id in players) {
         if (!backendPlayers[id]) {
-          console.log("Removing disconnected player:", id);
           delete players[id];
         }
       }
-    });
+    };
 
-    // Create keys state
+    socketRef.current.on("updatePlayers", handleUpdatePlayers);
+
     const keys = createDefaultKeysState();
 
-    // Initialize lastTimeRef
     lastTimeRef.current = performance.now();
 
-    // Set up event listeners
     const cleanup = setupEventListeners(keys, lastTimeRef);
     let frontRenderLayerCanvas: HTMLCanvasElement | undefined;
 
@@ -244,25 +230,20 @@ export default function GameCanvas({ socket }: { socket: Socket }) {
       const deltaTime = (currentTime - lastTimeRef.current) / 1000;
       lastTimeRef.current = currentTime;
 
-      // Reference to local player for camera following
-      const localPlayer = players[socket.id!];
+      const localPlayer = socketRef.current?.id ? players[socketRef.current.id] : undefined;
 
-      // Update all players
       for (const id in players) {
         const player = players[id];
 
         if (!player) return;
-        // Only process local player input
-        if (id === socket.id) {
+        if (id === socketRef.current?.id) {
           player.handleInput(keys);
           player.update(keys, deltaTime, collisionBlocks);
         } else {
-          // For remote players, just update animation frames
           player.updateAnimationOnly(deltaTime);
         }
       }
 
-      // Camera positioning logic (if local player exists)
       let horizontalScrollDistance = 0;
       let verticalScrollDistance = 0;
 
@@ -277,14 +258,12 @@ export default function GameCanvas({ socket }: { socket: Socket }) {
         );
       }
 
-      // Rendering
       c.save();
       c.scale(MAP_SCALE, MAP_SCALE);
       c.translate(-horizontalScrollDistance, -verticalScrollDistance);
       c.clearRect(0, 0, canvas.width, canvas.height);
       c.drawImage(backgroundCanvas, 0, 0);
 
-      // Draw all players
       for (const id in players) {
         const player = players[id];
         if (!player) return;
@@ -316,6 +295,7 @@ export default function GameCanvas({ socket }: { socket: Socket }) {
     startRendering();
 
     return () => {
+      socketRef.current.off("updatePlayers", handleUpdatePlayers);
       cleanup();
     };
   }, []);

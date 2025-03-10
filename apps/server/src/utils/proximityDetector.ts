@@ -1,11 +1,12 @@
+import { CHAT_PROXIMITY_THRESHOLD, UPDATE_INTERVAL } from "../config/serverConfig";
 import { Player } from "../types/Player";
 
 export const PROXIMITY_CONFIG = {
   // Distance threshold for proximity chat (in game units)
-  CHAT_PROXIMITY_THRESHOLD: 150,
+  CHAT_PROXIMITY_THRESHOLD: CHAT_PROXIMITY_THRESHOLD,
   
   // How often to update proximity relationships (in ms)
-  UPDATE_INTERVAL: 1000,
+  UPDATE_INTERVAL: UPDATE_INTERVAL,
   
   // When true, creates transitive relationships (if A is near B and B is near C, 
   // then A, B, and C are all in the same chat group even if A is not directly near C)
