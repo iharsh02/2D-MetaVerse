@@ -9,6 +9,7 @@ export function setupPlayerHandlers(io: Server, socket: Socket) {
 
   // Initialize new player
   players[socket.id] = {
+    id : socket.id,
     x: 100,
     y: 100,
     size: 15,
@@ -16,13 +17,11 @@ export function setupPlayerHandlers(io: Server, socket: Socket) {
     velocity: { x: 0, y: 0 },
   };
 
-  // Initialize input state
   playerInputs[socket.id] = {
     keys: { w: false, a: false, s: false, d: false },
     seq: 0,
   };
 
-  // Send player state to all clients
   io.emit("updatePlayers", players);
 
   // Handle input events

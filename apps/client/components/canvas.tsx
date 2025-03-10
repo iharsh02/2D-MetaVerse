@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { Socket } from "socket.io-client";
 import { loadImage } from "@/lib/utils";
 import {
   setupEventListeners,
@@ -22,7 +23,6 @@ import l_Trees_1 from "@/data/l_Trees_1";
 import l_Trees_2 from "@/data/l_Trees_2";
 import l_Trees_3 from "@/data/l_Trees_3";
 import l_Trees_4 from "@/data/l_Trees_4";
-import { io } from "socket.io-client";
 
 const layersData = {
   l_Terrain,
@@ -60,13 +60,11 @@ const tilesets = {
   l_Collisions: { imageUrl: "/images/characters.png", tileSize: 16 },
 };
 
-export default function GameCanvas() {
+export default function GameCanvas({ socket }: { socket: Socket }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  // Create the lastTimeRef at the component level, not inside useEffect
   const lastTimeRef = useRef<number>(performance.now());
 
   useEffect(() => {
-    const socket = io("http://localhost:8080");
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -319,7 +317,6 @@ export default function GameCanvas() {
 
     return () => {
       cleanup();
-      socket.disconnect();
     };
   }, []);
 

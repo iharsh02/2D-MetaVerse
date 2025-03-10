@@ -1,1 +1,1 @@
-{"root":["./src/server.ts","./src/config/serverConfig.ts","./src/handlers/playerHandlers.ts","./src/types/Player.ts","./src/utils/movement.ts"],"version":"5.7.3"}
+{"root":["./src/server.ts","./src/config/serverConfig.ts","./src/handlers/chatHandlers.ts","./src/handlers/playerHandlers.ts","./src/types/Player.ts","./src/utils/movement.ts","./src/utils/proximityDetector.ts"],"version":"5.7.3"}
