@@ -11,5 +11,12 @@ export const SOCKET_OPTIONS = {
 
 export const UPDATE_INTERVAL = 15;
 export const CHAT_PROXIMITY_THRESHOLD = 50;
+
 export const X_VELOCITY = 120;
 export const Y_VELOCITY = 120;
+
+export const MEDIA_PROXIMITY_THRESHOLD = 30;
+export const MEDIA_WORKERS = 3;
+export const MEDIASOUP_WORKERS = 3;
+export const MEDIASOUP_PROXIMITY_THRESHOLD = 50;
+export const MEDIASOUP_LISTEN_IP = '127.0.0.1';

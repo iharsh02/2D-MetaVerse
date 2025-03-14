@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react'
 import { Bell, Calendar, MessageSquare, Mic, MicOff, Monitor, MoreHorizontal, Users, Video, VideoOff, Wand2 } from 'lucide-react'
 import { cn } from '@workspace/ui/lib/utils';
 
@@ -27,7 +26,15 @@ const Logo = () => (
 //   </div>
 // )
 
-const ActionButton = ({ icon: Icon, active = false, onClick }: { icon: React.ElementType; active?: boolean; onClick?: () => void }) => (
+const ActionButton = ({ 
+  icon: Icon, 
+  active = false, 
+  onClick 
+}: { 
+  icon: React.ElementType; 
+  active?: boolean; 
+  onClick?: () => void 
+}) => (
   <button
     onClick={onClick}
     className={cn(
@@ -50,18 +57,22 @@ const FeatureButton = ({ icon: Icon, badge }: { icon: React.ElementType; badge?:
   </button>
 )
 
-export default function AppBar() {
-  const [isMuted, setIsMuted] = useState(false)
-  const [isVideoOff, setIsVideoOff] = useState(false)
+interface AppBarProps {
+  isMuted: boolean;
+  isVideoOff: boolean;
+  onToggleMic: () => void;
+  onToggleVideo: () => void;
+}
 
+export default function AppBar({ isMuted, isVideoOff, onToggleMic, onToggleVideo }: AppBarProps) {
   return (
     <div className="flex items-center justify-between px-4 py-2 bg-[#1e2124] text-white">
       <div className="flex items-center space-x-4">
         <Logo />
       </div>
       <div className="flex items-center space-x-2">
-        <ActionButton icon={isMuted ? MicOff : Mic} active={isMuted} onClick={() => setIsMuted(!isMuted)} />
-        <ActionButton icon={isVideoOff ? VideoOff : Video} active={isVideoOff} onClick={() => setIsVideoOff(!isVideoOff)} />
+        <ActionButton icon={isMuted ? MicOff : Mic} active={isMuted} onClick={onToggleMic} />
+        <ActionButton icon={isVideoOff ? VideoOff : Video} active={isVideoOff} onClick={onToggleVideo} />
         <ActionButton icon={Monitor} />
         <button className="p-1 rounded-lg bg-gray-700 text-gray-400 hover:text-white transition-colors">
           <MoreHorizontal className="w-5 h-5" />

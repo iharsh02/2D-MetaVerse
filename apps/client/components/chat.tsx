@@ -8,6 +8,7 @@ import { Button } from '@workspace/ui/components/button';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@workspace/ui/components/card';
 import { Input } from '@workspace/ui/components/input';
 import { Socket } from "socket.io-client";
+import { MediaClient } from '../lib/mediaClient';
 
 interface ChatMessage {
   id: string;
@@ -18,9 +19,10 @@ interface ChatMessage {
 
 interface ChatBoxProps {
   socket: Socket;
+  mediaClient: MediaClient;
 }
 
-const ChatBox: React.FC<ChatBoxProps> = ({ socket }) => {
+const ChatBox: React.FC<ChatBoxProps> = ({ socket, mediaClient }) => {
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [nearbyPlayers, setNearbyPlayers] = useState<string[]>([]);
@@ -57,7 +59,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({ socket }) => {
   };
 
   return (
-    <Card className="w-full h-[calc(100vh-4rem)] max-w-md mx-auto bg-[#1e2124] text-white flex flex-col">
+    <Card className="w-full flex-grow bg-[#1e2124] text-white flex flex-col overflow-hidden">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-xl font-bold">Chat</CardTitle>
         <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
